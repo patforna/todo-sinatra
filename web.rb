@@ -3,7 +3,7 @@ require 'sinatra/reloader' if development?
 require 'json'
 require 'mongo'
 
-configure do
+configure :development do
   set :db, Mongo::Connection.new.db('spikes').collection('todos')
 end
 
@@ -27,15 +27,15 @@ end
 
 put '/:id' do
   data = JSON.parse request.body.read    
-  settings.db.update({'_id' => object_id(params[:id])}, {'$set' => data})
+  settings.db.update({'_id' => bson_id(params[:id])}, {'$set' => data})
 end
 
 delete '/:id' do
-  settings.db.remove(:_id => object_id(params[:id]))
+  settings.db.remove(:_id => bson_id(params[:id]))
 end
 
 helpers do
-  def object_id val
+  def bson_id val
     BSON::ObjectId.from_string(val)
   end
 end
