@@ -7,6 +7,14 @@ configure do
   set :db, Mongo::Connection.new.db('spikes').collection('todos')
 end
 
+configure :production do
+    db_uri = URI.parse(ENV['MONGOHQ_URL'])
+    db_name = db_uri.path.gsub(/^\//, '')
+    db_connection = Mongo::Connection.new(db_uri.host, db_uri.port).db(db_name)
+    db_connection.authenticate(db_uri.user, db_uri.password) unless (db_uri.user.nil?)
+    set :db, db_connection.collection('todos')
+end
+
 get '/' do
   @todos = settings.db.find.to_a
   erb :index
